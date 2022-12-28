@@ -1,0 +1,201 @@
+@import 'vars';
+@import 'reset';
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap');
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css");
+body {
+  background: $MAIN_BG;
+  padding-top: 60px;
+  font-family: 'Raleway', sans-serif;
+}
+
+nav, main {
+  width: 800px;
+  max-width: 100%;
+  padding: 0 15px;
+  margin: auto;
+}
+
+textarea {
+  border: 1px #41b883 solid;
+  border-radius: 7px;
+  padding: 15px;
+  outline: none;
+
+  &:focus {
+    border: 1px #247652 solid;
+  }
+}
+
+h1 {
+  font-size: 25px;
+  font-weight: bold;
+}
+h2 {
+  font-size: 22px;
+}
+h3 {
+  font-size: 20px;
+}
+h4 {
+  font-size: 18px;
+}
+p {
+  font-size: 16px;
+}
+
+h1, h2, h3, h4, p {
+  margin: 25px 0;
+  display: block;
+  line-height: 1.2em;
+}
+
+header {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 50px;
+  background: #fff;
+  box-shadow: inset 0 -1px 0 0 #fff, 0 1px 5px rgb(0 0 0 / 10%);
+
+  nav {
+    display: flex;
+    align-items: center;
+    height: 100%;
+
+
+    .nav {
+      font-size: 20px;
+      font-weight: bold;
+      display: flex;
+
+      &-left {
+        display: flex;
+        flex-grow: 0;
+        align-items: center;
+        justify-content: center;
+      }
+
+      &-right {
+        flex-grow: 1;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      &-plus {
+        padding: 0 15px;
+        font-size: 20px;
+        font-family: 'Seymour One', sans-serif;
+      }
+
+      &-link {
+        background: transparent no-repeat center center;
+        background-size: contain;
+        display: inline-block;
+        text-decoration: none;
+        width: 35px;
+        height: 35px;
+
+        &--vue {
+          background-image: url(vue.svg);
+        }
+        &--cat {
+          background-image: url(logo.png);
+        }
+
+        &--sitename {
+          line-height: 35px;
+          font-size: 23px;
+          color: #000;
+          background: linear-gradient(to right, #34495e, #41b883, #34495e);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          animation: logo-bg linear 40s infinite;
+          width: auto;
+          font-weight: bold;
+        }
+
+        .blinking {
+          color: #247652;
+          font-size: 23px;
+          animation: blinking linear 1.5s infinite;
+        }
+
+        @keyframes blinking {
+          0% {
+            opacity: 1;
+          }
+          50% {
+            opacity: .1;
+          }
+          100% {
+            opacity: 1;
+          }
+        }
+
+        @keyframes logo-bg {
+          0% {
+            background-position: 0px 0;
+          }
+          100% {
+            background-position: 5000px 0;
+          }
+        }
+      }
+    }
+  }
+}
+
+.mt {
+  &-1 { margin-top: 3px }
+  &-2 { margin-top: 7px }
+  &-3 { margin-top: 12px }
+  &-4 { margin-top: 15px }
+}
+
+.button {
+  text-decoration: none;
+  color: #fff;
+  background: #41b883;
+  padding: 10px 15px;
+  border-radius: 5px;
+  border: 1px #65c198 solid;
+  transition: all .25s ease;
+  cursor: pointer;
+
+  &:hover{
+    background: #247652;
+  }
+
+  &--fluid {
+    width: 100%;
+  }
+
+  &--ligth {
+    background: none;
+    color: #247652;
+    &:hover {
+      background: #41b883;
+      color: #fff;
+    }
+  }
+}
+
+.text {
+  &-bold {
+    font-weight: bold;
+  }
+  &-italic {
+    font-style: italic;
+  }
+
+  &-center {
+    text-align: center;
+  }
+  &-right {
+    text-align: right;
+  }
+  &-left {
+    text-align: left;
+  }
+}
