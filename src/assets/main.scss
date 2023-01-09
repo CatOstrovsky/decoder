@@ -161,6 +161,7 @@ header {
   border-radius: 5px;
   border: 1px #65c198 solid;
   transition: all .25s ease;
+  display: inline-block;
   cursor: pointer;
 
   &:hover{

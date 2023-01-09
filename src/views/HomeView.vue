@@ -9,19 +9,23 @@
     </p>
     <p class="text-center text-bold">Enough words! Let's try to encode something!</p>
 
+    <p class="text-center" style="color:red;" v-if="rules.length === 0">
+      <i class="fa-solid fa-triangle-exclamation"></i> Add any rule from the rules list below
+    </p>
+
     <draggable
-      v-model="myArray"
+      v-model="rules"
       group="rules"
       class="rules"
       item-key="id">
       <template #item="{ element, index }">
         <div class="rules-item">
           <span class="rules-item-number"><i class="fa-sharp fa-solid fa-arrow-down"></i></span>
-          {{element.name}}
+          {{ rulesConfig[element.type]?.title ?? "No found"}}
 
           <div class="rules-item-controls">
-            <a href="#"><i class="fa-sharp fa-solid fa-pen"></i></a>
-            <a href="#"><i class="fa-sharp fa-solid fa-trash"></i></a>
+            <a href="#" @click.prevent="editRule(element)" v-if="!!element.config"><i class="fa-sharp fa-solid fa-pen"></i></a>
+            <a href="#" @click.prevent="removeRule(index)"><i class="fa-sharp fa-solid fa-trash"></i></a>
           </div>
         </div>
       </template>
@@ -49,41 +53,164 @@
         </div>
       </div>
     </div>
+
+    <div class="rules-list">
+      <h2 class="text-center">Avalible rules</h2>
+      <ul class="rules-to-add">
+        <li v-for="(rule, type) in rulesConfig" class="rules-to-add__item">
+          <div class="rules-to-add__item--left">
+            <p class="rules-to-add__item__title">{{ rule.title }}</p>
+            <div v-html="rule.description" class="rules-to-add__item__description"></div>
+          </div>
+          <div class="rules-to-add__item--right">
+            <a href="#" class="button button--ligth" @click.prevent="addRule(type)">Add</a>
+          </div>
+        </li>
+      </ul>
+    </div>
   </main>
 </template>
 
 <script setup>
-import { ref, reactive } from "vue"
-
+import { ref, reactive, inject, markRaw } from "vue"
+import modalReplaceConfig from "@/components/modal-replace-config.vue"
+import modalCaesarConfig from "@/components/modal-caesar-config.vue"
 import draggable from 'vuedraggable'
 
-let myArray = ref([
-  { id: 0, name: "Base64" },
-  { id: 1, name: "Replace letters" },
-  { id: 2, name: "Base64" },
-  { id: 3, name: "MD5" }
-]);
+const $modals = inject("$modals")();
+function replaceAt(string, index, replacement) {
+  return string.substring(0, index) + replacement + string.substring(index + replacement.length);
+}
+
+let rules = ref([ ]);
+const rulesConfig = ref({
+  b64 : {
+    title: "Base 64",
+    description: "In computer programming, Base64 is a group of binary-to-text encoding schemes that represent binary data (more specifically, a sequence of 8-bit bytes) in sequences of 24 bits that can be represented by four 6-bit Base64 digits.",
+    encode(str, config) {
+      return window.btoa(unescape(encodeURIComponent(str)));
+    },
+    decode(str, config) {
+      return decodeURIComponent(escape(window.atob(str)));
+    }
+  },
+  replace : {
+    title: "Replace letter",
+    description: "A class of encryption methods that come down to creating an encryption table according to a certain algorithm, in which for each plaintext letter there is a single ciphertext letter associated with it. Encryption itself consists in replacing letters according to the table. To decrypt, it is enough to have the same table, or to know the algorithm by which it is generated.",
+    componentEdit: markRaw(modalReplaceConfig),
+    encode(str, config) {
+      if(!!config?.replaceRules?.length > 0)
+        for(let rule of config.replaceRules)
+          str = str.replaceAll(rule.k, rule.v)
+
+      return str;
+    },
+    decode(str, config) {
+      if(!!config?.replaceRules?.length > 0)
+        for(let rule of config.replaceRules)
+          str = str.replaceAll(rule.v, rule.k)
+
+      return str;
+    }
+  },
+  caesar: {
+    title: "Caesar's method",
+    description: "In cryptography, a Caesar cipher, also known as Caesar's cipher, the shift cipher, Caesar's code or Caesar shift, is one of the simplest and most widely known encryption techniques. It is a type of substitution cipher in which each letter in the plaintext is replaced by a letter some fixed number of positions down the alphabet. For example, with a left shift of 3, D would be replaced by A, E would become B, and so on. The method is named after Julius Caesar, who used it in his private correspondence.",
+    componentEdit: markRaw(modalCaesarConfig),
+    encode(str, config) {
+      let output = str;
+      for(let index = 0;index < output.length; index++) {
+        let letter = output[index];
+        output = replaceAt(output, index, String.fromCharCode(letter.charCodeAt() + (config?.moveTo ?? 10)));
+      }
+
+      return output;
+    },
+    decode(str, config) {
+      let output = str;
+      for(let index = 0;index < output.length; index++) {
+        let letter = output[index];
+        output = replaceAt(output, index, String.fromCharCode(letter.charCodeAt() - (config?.moveTo ?? 10)));
+      }
+
+      return output;
+    }
+  }
+});
+
 let decoded = ref("");
 let encoded = ref("");
 
-function utf8_to_b64(str) {
-  return window.btoa(unescape(encodeURIComponent(str)));
+function addRule(ruleType) {
+  rules.value.push({ id: Math.random() * 10000, type: ruleType, config: !!rulesConfig.value[ruleType]?.componentEdit ? {} : null})
 }
 
-function b64_to_utf8(str) {
-  return decodeURIComponent(escape(window.atob(str)));
+function editRule(rule) {
+  $modals.show({
+    component: rulesConfig.value[rule.type].componentEdit,
+    data: {
+      rule,
+      save(config) {
+        rule.config = config;
+      }
+    },
+    width: 500
+  });
+}
+
+function removeRule(index) {
+  rules.value.splice(index, 1)
 }
 
 function encode() {
-  encoded.value = utf8_to_b64(decoded.value);
+  let output = decoded.value;
+  for(let rule of rules.value) {
+    output =  rulesConfig.value[rule.type].encode(output, rule.config)
+  }
+  encoded.value = output;
 }
 
 function decode() {
-  decoded.value = b64_to_utf8(encoded.value);
+  let output = encoded.value;
+  for(let i = rules.value.length - 1;i >= 0; i--) {
+    let rule = rules.value[i];
+    output =  rulesConfig.value[rule.type].decode(output, rule.config)
+  }
+  decoded.value = output;
 }
 </script>
 
 <style scoped lang="scss">
+.rules-to-add {
+  &__item {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+
+    &--left {
+      flex-grow: 1;
+    }
+    &--right {
+      flex-grow: 0;
+    }
+
+    .button {
+      display: inline-block;
+    }
+
+    &__title {
+      margin: 0px;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    &__description {
+      margin-bottom: 5px;
+      padding-right: 15px;
+    }
+  }
+}
+
 .app {
   &-input {
     display: flex;

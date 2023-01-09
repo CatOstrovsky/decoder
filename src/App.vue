@@ -20,6 +20,7 @@ import { RouterLink, RouterView } from 'vue-router'
   <main>
     <RouterView />
   </main>
+  <modals/>
 </template>
 
 <style scoped lang="scss">
